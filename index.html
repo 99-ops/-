@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>农场小游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB, #98FB98);
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .game-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .avatar {
+            font-size: 3em;
+        }
+        
+        .player-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .level-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .exp-bar {
+            width: 150px;
+            height: 10px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .exp-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .resources {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .resource {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .farm-area {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #E8F5E8;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        
+        .weather-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #87CEEB, #98FB98);
+            border-radius: 10px;
+            border: 2px solid #4682B4;
+            color: #2F4F4F;
+            font-weight: bold;
+        }
+        
+        .seed-selector {
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            max-width: 600px;
+        }
+        
+        .seed-selector h3 {
+            margin: 0 0 10px 0;
+            color: #2E7D32;
+        }
+        
+        .seed-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .seed-btn {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            background: white;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .seed-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .farm-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+        }
+        
+        .farm-plot {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #8BC34A;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #E8F5E8, #F1F8E9);
+        }
+        
+        .farm-plot:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(139, 195, 74, 0.4);
+        }
+        
+        .farm-plot.planted {
+            background: linear-gradient(135deg, #C8E6C9, #DCEDC8);
+            border-color: #4CAF50;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .tool {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .tool:hover {
+            background: #f5f5f5;
+        }
+        
+        .tool.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.hidden {
+            display: none !important;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        /* 美化的音乐面板样式 */
+        .music-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 280px;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .music-panel.hidden {
+            display: none;
+        }
+        
+        .music-panel:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .music-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .music-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .music-title::before {
+            content: "🎵";
+            font-size: 20px;
+            animation: musicNote 2s ease-in-out infinite;
+        }
+        
+        @keyframes musicNote {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+        
+        .music-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .music-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .music-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .music-control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .music-control-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        .music-control-label {
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .music-control-label::before {
+            font-size: 16px;
+        }
+        
+        .music-control-label[data-type="music"]::before {
+            content: "🎵";
+        }
+        
+        .music-control-label[data-type="sound"]::before {
+            content: "🔊";
+        }
+        
+        .music-toggle-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(238, 90, 36, 0.3);
+            min-width: 70px;
+        }
+        
+        .music-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(238, 90, 36, 0.4);
+        }
+        
+        .music-toggle-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        .music-toggle-btn.active {
+            background: linear-gradient(135deg, #00d2d3, #54a0ff);
+            box-shadow: 0 4px 12px rgba(84, 160, 255, 0.3);
+        }
+        
+        .music-toggle-btn.active:hover {
+            box-shadow: 0 6px 16px rgba(84, 160, 255, 0.4);
+        }
+        
+        .music-volume-slider {
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px 0;
+        }
+        
+        .volume-label {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .volume-input {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .volume-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .volume-input::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        
+        .volume-input::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .music-visualizer {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 3px;
+            height: 30px;
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+        
+        .visualizer-bar {
+            width: 4px;
+            background: linear-gradient(to top, #ff6b6b, #54a0ff);
+            border-radius: 2px;
+            animation: visualizer 1.5s ease-in-out infinite;
+        }
+        
+        .visualizer-bar:nth-child(1) { animation-delay: 0s; }
+        .visualizer-bar:nth-child(2) { animation-delay: 0.1s; }
+        .visualizer-bar:nth-child(3) { animation-delay: 0.2s; }
+        .visualizer-bar:nth-child(4) { animation-delay: 0.3s; }
+        .visualizer-bar:nth-child(5) { animation-delay: 0.4s; }
+        .visualizer-bar:nth-child(6) { animation-delay: 0.2s; }
+        .visualizer-bar:nth-child(7) { animation-delay: 0.1s; }
+        
+        @keyframes visualizer {
+            0%, 100% { height: 8px; }
+            50% { height: 25px; }
+        }
+        
+        /* 音乐面板入场动画 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%) translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        .music-panel:not(.hidden) {
+            animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* 按钮点击动画 */
+        .music-toggle-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        /* 音量滑块光晕效果 */
+        .volume-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        
+        /* 可视化条激活状态 */
+        .music-visualizer.active .visualizer-bar {
+            animation-play-state: running;
+        }
+        
+        .music-visualizer:not(.active) .visualizer-bar {
+            animation-play-state: paused;
+            height: 8px;
+        }
+        
+        /* 标题闪烁动画 */
+        .music-title.playing::before {
+            animation: musicPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes musicPulse {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                filter: hue-rotate(0deg);
+            }
+            50% { 
+                transform: scale(1.2) rotate(10deg);
+                filter: hue-rotate(60deg);
+            }
+        }
+        
+        .shop-container {
+            max-width: 800px;
+        }
+        
+        .shop-tabs, .inventory-tabs, .pet-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .shop-grid, .inventory-grid, .pet-grid, .pet-shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .shop-item, .inventory-item {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .shop-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .shop-item.special {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, #fff 0%, #fff8e1 100%);
+        }
+        
+        .item-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .item-info h4 {
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        .item-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .price {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .price.diamond {
+            color: #2196F3;
+        }
+        
+        .buy-btn, .sell-btn, .claim-btn, .care-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .buy-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .buy-btn:hover {
+            background: #45a049;
+        }
+        
+        .buy-btn.diamond {
+            background: #2196F3;
+        }
+        
+        .buy-btn.diamond:hover {
+            background: #1976D2;
+        }
+        
+        .sell-btn {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .sell-btn:hover {
+            background: #F57C00;
+        }
+        
+        .item-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .item-price {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .item-status {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* 成就样式 */
+        .achievement-container {
+            max-width: 800px;
+        }
+        
+        .achievement-stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .achievement-item.unlocked {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #fff 0%, #e8f5e8 100%);
+        }
+        
+        .achievement-item.locked {
+            opacity: 0.6;
+        }
+        
+        .achievement-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-info h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .achievement-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .achievement-reward {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .achievement-progress {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        /* 任务样式 */
+        .task-container {
+            max-width: 800px;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .task-refresh {
+            text-align: right;
+        }
+        
+        .refresh-btn {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .task-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            transition: all 0.3s;
+        }
+          .task-item.complete {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #fff 0%, #e8f5e8 100%);
+        }
+        
+        .task-item.claimed {
+            border-color: #9E9E9E;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            opacity: 0.8;
+        }
+        
+        .task-item.incomplete {
+            border-color: #ddd;
+        }
+        
+        .task-icon {
+            font-size: 40px;
+            margin-right: 20px;
+        }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-info h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .task-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .task-progress {
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .task-reward {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .claim-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .claim-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .task-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* 宠物样式 */
+        .pet-container {
+            max-width: 800px;
+        }
+        
+        .pet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .pet-coins {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .pet-slot {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pet-slot.occupied {
+            border-style: solid;
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #fff 0%, #e8f5e8 100%);
+        }
+        
+        .pet-placeholder {
+            text-align: center;
+        }
+        
+        .pet-shop-item {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s;
+        }
+        
+        .pet-shop-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .pet-shop-item.special {
+            border-color: #9C27B0;
+            background: linear-gradient(135deg, #fff 0%, #f3e5f5 100%);
+        }
+        
+        .pet-info h4 {
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        .pet-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .pet-price {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .buy-pet-btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .buy-pet-btn:hover {
+            background: #45a049;
+        }
+        
+        .buy-pet-btn.diamond {
+            background: #2196F3;
+        }
+        
+        .buy-pet-btn.diamond:hover {
+            background: #1976D2;
+        }
+        
+        .pet-care-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .care-options {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .care-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        
+        .care-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+        
+        .care-info {
+            flex: 1;
+        }
+        
+        .care-info h5 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        
+        .care-info p {
+            margin: 3px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .care-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .care-btn:hover {
+            background: #45a049;
+        }
+        
+        .adopt-btn {
+            padding: 10px 20px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .adopt-btn:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部信息栏 -->
+        <header class="game-header">
+            <div class="player-info">
+                <div class="avatar" id="playerAvatar">👨‍🌾</div>
+                <div class="player-stats">
+                    <div class="player-name" id="playerName">农场主</div>
+                    <div class="level-info">
+                        <span>等级: <span id="playerLevel">1</span></span>
+                        <div class="exp-bar">
+                            <div class="exp-fill" id="expBar" style="width: 0%;"></div>
+                        </div>
+                        <span id="expText">0/100</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="resources">
+                <div class="resource gold">
+                    💰 <span id="goldAmount">1000</span>
+                </div>
+                <div class="resource diamonds">
+                    💎 <span id="diamondAmount">10</span>
+                </div>
+            </div>
+            
+            <div class="game-controls">
+                <button class="btn" id="shopBtn">🛒 商店</button>
+                <button class="btn" id="inventoryBtn">📦 仓库</button>
+                <button class="btn" id="achievementsBtn">🏆 成就</button>
+                <button class="btn" id="tasksBtn">📋 任务</button>
+                <button class="btn" id="petsBtn">🐾 宠物</button>
+                <button class="btn" id="saveBtn">💾 保存</button>
+                <button class="btn" id="helpBtn">❓ 帮助</button>
+                <button class="btn" id="musicBtn">🎵 音乐</button>
+            </div>
+        </header>
+
+        <!-- 农场主体区域 -->
+        <main class="farm-area">
+            <div class="status" id="status">
+                🌱 欢迎来到农场！选择种子和工具开始您的农场之旅
+            </div>
+            
+            <!-- 天气显示 -->
+            <div class="weather-display" id="weatherDisplay">
+                <span id="weatherIcon">☀️</span>
+                <span id="weatherName">晴天</span>
+                <span id="weatherDesc">作物正常生长</span>
+            </div>
+            
+            <!-- 种子选择器 -->
+            <div class="seed-selector">
+                <h3>🌱 选择种子：</h3>
+                <div class="seed-buttons" id="seedButtons">
+                    <!-- 种子按钮将由JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="farm-grid" id="farmGrid">
+                <!-- 农田格子将由JavaScript动态生成 -->
+            </div>
+            
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="tool active" id="plantTool" data-tool="plant">🌱 种植</div>
+                <div class="tool" id="waterTool" data-tool="water">💧 浇水</div>  
+                <div class="tool" id="harvestTool" data-tool="harvest">🌾 收获</div>
+                <div class="tool" id="removeTool" data-tool="shovel">🥄 铲除</div>
+            </div>
+        </main>
+
+        <!-- 商店弹窗 -->
+        <div id="shopModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🛒 种子商店</h2>
+                    <button class="close-btn" id="closeShop">&times;</button>
+                </div>
+                <div id="shopItems" class="shop-container">
+                    <div class="shop-tabs">
+                        <button class="tab-btn active" data-tab="seeds">🌱 种子</button>
+                        <button class="tab-btn" data-tab="tools">💎 特殊道具</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="seeds-tab">
+                        <div class="shop-grid">
+                            <div class="shop-item" data-seed="carrot">
+                                <div class="item-icon">🥕</div>
+                                <div class="item-info">
+                                    <h4>胡萝卜种子</h4>
+                                    <p>生长时间: 30秒</p>
+                                    <p>产量: 2-4个</p>
+                                    <p class="price">💰 10金币</p>
+                                </div>
+                                <button class="buy-btn" onclick="buyItem('carrotSeed', 10)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item" data-seed="tomato">
+                                <div class="item-icon">🍅</div>
+                                <div class="item-info">
+                                    <h4>番茄种子</h4>
+                                    <p>生长时间: 60秒</p>
+                                    <p>产量: 3-6个</p>
+                                    <p class="price">💰 25金币</p>
+                                </div>
+                                <button class="buy-btn" onclick="buyItem('tomatoSeed', 25)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item" data-seed="corn">
+                                <div class="item-icon">🌽</div>
+                                <div class="item-info">
+                                    <h4>玉米种子</h4>
+                                    <p>生长时间: 90秒</p>
+                                    <p>产量: 4-8个</p>
+                                    <p class="price">💰 50金币</p>
+                                </div>
+                                <button class="buy-btn" onclick="buyItem('cornSeed', 50)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item" data-seed="wheat">
+                                <div class="item-icon">🌾</div>
+                                <div class="item-info">
+                                    <h4>小麦种子</h4>
+                                    <p>生长时间: 120秒</p>
+                                    <p>产量: 5-10个</p>
+                                    <p class="price">💰 80金币</p>
+                                </div>
+                                <button class="buy-btn" onclick="buyItem('wheatSeed', 80)">购买</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="tools-tab">
+                        <div class="shop-grid">
+                            <div class="shop-item special">
+                                <div class="item-icon">⚡</div>
+                                <div class="item-info">
+                                    <h4>经验加倍器</h4>
+                                    <p>30分钟内经验翻倍</p>
+                                    <p class="price diamond">💎 5钻石</p>
+                                </div>
+                                <button class="buy-btn diamond" onclick="buyDiamondItem('expBooster', 5)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item special">
+                                <div class="item-icon">💧</div>
+                                <div class="item-info">
+                                    <h4>自动浇水器</h4>
+                                    <p>1小时内自动浇水</p>
+                                    <p class="price diamond">💎 10钻石</p>
+                                </div>
+                                <button class="buy-btn diamond" onclick="buyDiamondItem('autoWater', 10)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item special">
+                                <div class="item-icon">🔧</div>
+                                <div class="item-info">
+                                    <h4>农田扩展包</h4>
+                                    <p>增加4块农田</p>
+                                    <p class="price diamond">💎 20钻石</p>
+                                </div>
+                                <button class="buy-btn diamond" onclick="buyDiamondItem('farmExpansion', 20)">购买</button>
+                            </div>
+                            
+                            <div class="shop-item special">
+                                <div class="item-icon">🌟</div>
+                                <div class="item-info">
+                                    <h4>幸运加速器</h4>
+                                    <p>作物生长速度翻倍</p>
+                                    <p class="price diamond">💎 15钻石</p>
+                                </div>
+                                <button class="buy-btn diamond" onclick="buyDiamondItem('luckyBooster', 15)">购买</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 仓库弹窗 -->
+        <div id="inventoryModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📦 我的仓库</h2>
+                    <button class="close-btn" id="closeInventory">&times;</button>
+                </div>
+                <div id="inventoryGrid" class="inventory-container">
+                    <div class="inventory-tabs">
+                        <button class="tab-btn active" data-tab="seeds">🌱 种子</button>
+                        <button class="tab-btn" data-tab="crops">🥕 作物</button>
+                        <button class="tab-btn" data-tab="tools">🔧 道具</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="inventory-seeds">
+                        <div class="inventory-grid">
+                            <div class="inventory-item">
+                                <div class="item-icon">🥕</div>
+                                <div class="item-name">胡萝卜种子</div>
+                                <div class="item-count" id="carrotSeed-count">0</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-icon">🍅</div>
+                                <div class="item-name">番茄种子</div>
+                                <div class="item-count" id="tomatoSeed-count">0</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-icon">🌽</div>
+                                <div class="item-name">玉米种子</div>
+                                <div class="item-count" id="cornSeed-count">0</div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-icon">🌾</div>
+                                <div class="item-name">小麦种子</div>
+                                <div class="item-count" id="wheatSeed-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="inventory-crops">
+                        <div class="inventory-grid">
+                            <div class="inventory-item sellable" data-crop="carrot">
+                                <div class="item-icon">🥕</div>
+                                <div class="item-name">胡萝卜</div>
+                                <div class="item-count" id="carrot-count">0</div>
+                                <div class="item-price">💰 5金币/个</div>
+                                <button class="sell-btn" onclick="sellCrop('carrot', 5)">出售</button>
+                            </div>
+                            <div class="inventory-item sellable" data-crop="tomato">
+                                <div class="item-icon">🍅</div>
+                                <div class="item-name">番茄</div>
+                                <div class="item-count" id="tomato-count">0</div>
+                                <div class="item-price">💰 12金币/个</div>
+                                <button class="sell-btn" onclick="sellCrop('tomato', 12)">出售</button>
+                            </div>
+                            <div class="inventory-item sellable" data-crop="corn">
+                                <div class="item-icon">🌽</div>
+                                <div class="item-name">玉米</div>
+                                <div class="item-count" id="corn-count">0</div>
+                                <div class="item-price">💰 25金币/个</div>
+                                <button class="sell-btn" onclick="sellCrop('corn', 25)">出售</button>
+                            </div>
+                            <div class="inventory-item sellable" data-crop="wheat">
+                                <div class="item-icon">🌾</div>
+                                <div class="item-name">小麦</div>
+                                <div class="item-count" id="wheat-count">0</div>
+                                <div class="item-price">💰 40金币/个</div>
+                                <button class="sell-btn" onclick="sellCrop('wheat', 40)">出售</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="inventory-tools">
+                        <div class="inventory-grid">
+                            <div class="inventory-item">
+                                <div class="item-icon">⚡</div>
+                                <div class="item-name">经验加倍器</div>
+                                <div class="item-count" id="expBooster-count">0</div>
+                                <div class="item-status">剩余时间: <span id="expBooster-time">未激活</span></div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-icon">💧</div>
+                                <div class="item-name">自动浇水器</div>
+                                <div class="item-count" id="autoWater-count">0</div>
+                                <div class="item-status">剩余时间: <span id="autoWater-time">未激活</span></div>
+                            </div>
+                            <div class="inventory-item">
+                                <div class="item-icon">🌟</div>
+                                <div class="item-name">幸运加速器</div>
+                                <div class="item-count" id="luckyBooster-count">0</div>
+                                <div class="item-status">剩余时间: <span id="luckyBooster-time">未激活</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成就弹窗 -->
+        <div id="achievementsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🏆 成就系统</h2>
+                    <button class="close-btn" id="closeAchievements">&times;</button>
+                </div>
+                <div id="achievementGrid" class="achievement-container">
+                    <div class="achievement-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">总成就数:</span>
+                            <span class="stat-value" id="totalAchievements">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">已解锁:</span>
+                            <span class="stat-value" id="unlockedAchievements">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">成就点数:</span>
+                            <span class="stat-value" id="achievementPoints">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-grid">
+                        <div class="achievement-item locked" id="achievement-firstPlant">
+                            <div class="achievement-icon">🌱</div>
+                            <div class="achievement-info">
+                                <h4>初次播种</h4>
+                                <p>种植你的第一颗种子</p>
+                                <div class="achievement-reward">奖励: 💰 50金币</div>
+                                <div class="achievement-progress">进度: <span>0/1</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-item locked" id="achievement-firstHarvest">
+                            <div class="achievement-icon">🥕</div>
+                            <div class="achievement-info">
+                                <h4>首次收获</h4>
+                                <p>收获你的第一个作物</p>
+                                <div class="achievement-reward">奖励: 💰 100金币</div>
+                                <div class="achievement-progress">进度: <span>0/1</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-item locked" id="achievement-plantMaster">
+                            <div class="achievement-icon">🌾</div>
+                            <div class="achievement-info">
+                                <h4>种植大师</h4>
+                                <p>种植100颗种子</p>
+                                <div class="achievement-reward">奖励: 💎 5钻石</div>
+                                <div class="achievement-progress">进度: <span>0/100</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-item locked" id="achievement-harvestMaster">
+                            <div class="achievement-icon">🏆</div>
+                            <div class="achievement-info">
+                                <h4>收获大师</h4>
+                                <p>收获500个作物</p>
+                                <div class="achievement-reward">奖励: 💎 10钻石</div>
+                                <div class="achievement-progress">进度: <span>0/500</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-item locked" id="achievement-goldCollector">
+                            <div class="achievement-icon">💰</div>
+                            <div class="achievement-info">
+                                <h4>金币收集家</h4>
+                                <p>累计获得10000金币</p>
+                                <div class="achievement-reward">奖励: 💎 15钻石</div>
+                                <div class="achievement-progress">进度: <span>0/10000</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-item locked" id="achievement-speedFarmer">
+                            <div class="achievement-icon">⚡</div>
+                            <div class="achievement-info">
+                                <h4>速度农夫</h4>
+                                <p>在5分钟内收获20个作物</p>
+                                <div class="achievement-reward">奖励: 💎 8钻石</div>
+                                <div class="achievement-progress">进度: <span>0/20</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每日任务弹窗 -->
+        <div id="tasksModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📋 每日任务</h2>
+                    <button class="close-btn" id="closeTasks">&times;</button>
+                </div>
+                <div id="taskGrid" class="task-container">
+                    <div class="task-header">
+                        <h3>📅 今日任务</h3>
+                        <div class="task-refresh">
+                            <span>刷新时间: <span id="taskRefreshTime">23:59:59</span></span>
+                            <button class="refresh-btn" onclick="refreshTasks()">🔄 刷新任务</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-grid">
+                        <div class="task-item incomplete" id="daily-task-1">
+                            <div class="task-icon">🌱</div>
+                            <div class="task-info">
+                                <h4>种植任务</h4>
+                                <p>种植5颗种子</p>
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <span class="progress-text">0/5</span>
+                                </div>                                <div class="task-reward">奖励: 💰 200金币 + 💎 2钻石</div>
+                            </div>
+                            <button class="claim-btn" disabled onclick="DailyTaskSystem.claimReward(1)">领取奖励</button>
+                        </div>
+                        
+                        <div class="task-item incomplete" id="daily-task-2">
+                            <div class="task-icon">🥕</div>
+                            <div class="task-info">
+                                <h4>收获任务</h4>
+                                <p>收获10个作物</p>
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <span class="progress-text">0/10</span>
+                                </div>                                <div class="task-reward">奖励: 💰 300金币 + 💎 3钻石</div>
+                            </div>
+                            <button class="claim-btn" disabled onclick="DailyTaskSystem.claimReward(2)">领取奖励</button>
+                        </div>
+                        
+                        <div class="task-item incomplete" id="daily-task-3">
+                            <div class="task-icon">💧</div>
+                            <div class="task-info">
+                                <h4>浇水任务</h4>
+                                <p>给作物浇水15次</p>
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <span class="progress-text">0/15</span>
+                                </div>                                <div class="task-reward">奖励: 💰 150金币 + 💎 1钻石</div>
+                            </div>
+                            <button class="claim-btn" disabled onclick="DailyTaskSystem.claimReward(3)">领取奖励</button>
+                        </div>
+                        
+                        <div class="task-item incomplete" id="daily-task-4">
+                            <div class="task-icon">💰</div>
+                            <div class="task-info">
+                                <h4>赚钱任务</h4>
+                                <p>累计赚取500金币</p>
+                                <div class="task-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                    <span class="progress-text">0/500</span>
+                                </div>                                <div class="task-reward">奖励: 💰 1000金币 + 💎 5钻石</div>
+                            </div>
+                            <button class="claim-btn" disabled onclick="DailyTaskSystem.claimReward(4)">领取奖励</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-stats">
+                        <div class="stat">
+                            <span>今日完成: </span>
+                            <span id="completedTasks">0/4</span>
+                        </div>
+                        <div class="stat">
+                            <span>总任务完成: </span>
+                            <span id="totalCompletedTasks">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 宠物弹窗 -->
+        <div id="petsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🐾 宠物系统</h2>
+                    <button class="close-btn" id="closePets">&times;</button>
+                </div>
+                <div id="petGrid" class="pet-container">
+                    <div class="pet-header">
+                        <h3>🐾 我的宠物</h3>
+                        <div class="pet-coins">
+                            <span>宠物币: </span>
+                            <span id="petCoins">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pet-tabs">
+                        <button class="tab-btn active" data-tab="owned">我的宠物</button>
+                        <button class="tab-btn" data-tab="shop">宠物商店</button>
+                        <button class="tab-btn" data-tab="care">宠物护理</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="owned-pets">
+                        <div class="pet-grid">                            <div class="pet-slot empty" id="pet-slot-1">
+                                <div class="pet-placeholder">
+                                    <div class="pet-icon">🐕</div>
+                                    <p>暂无宠物</p>
+                                    <button class="adopt-btn" onclick="showPetShop()">领养宠物</button>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-slot empty" id="pet-slot-2">
+                                <div class="pet-placeholder">
+                                    <div class="pet-icon">🐱</div>
+                                    <p>暂无宠物</p>
+                                    <button class="adopt-btn" onclick="showPetShop()">领养宠物</button>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-slot empty" id="pet-slot-3">
+                                <div class="pet-placeholder">
+                                    <div class="pet-icon">🐰</div>
+                                    <p>暂无宠物</p>
+                                    <button class="adopt-btn" onclick="showPetShop()">领养宠物</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="pet-shop">
+                        <div class="pet-shop-grid">
+                            <div class="pet-shop-item">
+                                <div class="pet-icon">🐕</div>
+                                <div class="pet-info">
+                                    <h4>小狗</h4>
+                                    <p>忠诚的伙伴，帮助寻找掉落的种子</p>
+                                    <p class="pet-price">💰 1000金币</p>
+                                </div>
+                                <button class="buy-pet-btn" onclick="buyPet('dog', 1000)">购买</button>
+                            </div>
+                            
+                            <div class="pet-shop-item">
+                                <div class="pet-icon">🐱</div>
+                                <div class="pet-info">
+                                    <h4>小猫</h4>
+                                    <p>敏捷的猎手，增加收获作物的几率</p>
+                                    <p class="pet-price">💰 1500金币</p>
+                                </div>
+                                <button class="buy-pet-btn" onclick="buyPet('cat', 1500)">购买</button>
+                            </div>
+                            
+                            <div class="pet-shop-item">
+                                <div class="pet-icon">🐰</div>
+                                <div class="pet-info">
+                                    <h4>兔子</h4>
+                                    <p>活泼的小家伙，加快作物生长速度</p>
+                                    <p class="pet-price">💎 10钻石</p>
+                                </div>
+                                <button class="buy-pet-btn diamond" onclick="buyPetWithDiamond('rabbit', 10)">购买</button>
+                            </div>
+                            
+                            <div class="pet-shop-item special">
+                                <div class="pet-icon">🦄</div>
+                                <div class="pet-info">
+                                    <h4>独角兽</h4>
+                                    <p>传说中的神兽，大幅提升所有收益</p>
+                                    <p class="pet-price">💎 50钻石</p>
+                                </div>
+                                <button class="buy-pet-btn diamond" onclick="buyPetWithDiamond('unicorn', 50)">购买</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="pet-care">
+                        <div class="pet-care-section">
+                            <h4>宠物护理中心</h4>
+                            <div class="care-options">
+                                <div class="care-item">
+                                    <div class="care-icon">🍖</div>
+                                    <div class="care-info">
+                                        <h5>喂食</h5>
+                                        <p>恢复宠物饥饿度</p>
+                                        <p>费用: 💰 50金币</p>
+                                    </div>
+                                    <button class="care-btn" onclick="feedPet()">喂食</button>
+                                </div>
+                                
+                                <div class="care-item">
+                                    <div class="care-icon">🛁</div>
+                                    <div class="care-info">
+                                        <h5>洗澡</h5>
+                                        <p>提升宠物心情</p>
+                                        <p>费用: 💰 30金币</p>
+                                    </div>
+                                    <button class="care-btn" onclick="bathePet()">洗澡</button>
+                                </div>
+                                
+                                <div class="care-item">
+                                    <div class="care-icon">🎾</div>
+                                    <div class="care-info">
+                                        <h5>玩耍</h5>
+                                        <p>增加宠物活力</p>
+                                        <p>费用: 免费</p>
+                                    </div>
+                                    <button class="care-btn" onclick="playWithPet()">玩耍</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        <!-- 音乐控制面板 -->
+        <div id="musicPanel" class="music-panel hidden">
+            <div class="music-header">
+                <div class="music-title">音乐设置</div>
+                <button id="closeMusicPanel" class="music-close">&times;</button>
+            </div>
+            <div class="music-controls">
+                <div class="music-control-item">
+                    <span class="music-control-label" data-type="music">背景音乐</span>
+                    <button id="musicToggle" class="music-toggle-btn">播放</button>
+                </div>
+                <div class="music-control-item">
+                    <span class="music-control-label" data-type="sound">音效</span>
+                    <button id="soundToggle" class="music-toggle-btn">开启</button>
+                </div>
+                <div class="music-control-item music-volume-slider">
+                    <span class="volume-label">音量</span>
+                    <input id="musicVolume" class="volume-input" type="range" min="0" max="1" step="0.01" value="0.7">
+                </div>
+                <div class="music-visualizer" id="musicVisualizer">
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const GameState = {            player: {
+                name: '农场主',
+                level: 1,
+                exp: 0,
+                maxExp: 100,
+                gold: 1000,
+                diamonds: 10,
+                totalPlantsGrown: 0,
+                totalHarvested: 0
+            },
+            inventory: {
+                tomato_seed: 5,
+                corn_seed: 3,
+                carrot_seed: 2,
+                wheat_seed: 4,
+                tomato: 0,
+                corn: 0,
+                carrot: 0,
+                wheat: 0
+            },
+            selectedSeed: 'tomato_seed',
+            plots: [],
+            farmSize: { rows: 4, cols: 6 },            weather: {
+                current: 'sunny'
+            },            achievements: {
+                first_plant: false,
+                first_harvest: false,
+                level_5: false,
+                level_10: false,
+                rich_farmer: false,
+                master_farmer: false
+            },
+            pets: [],
+            dailyTasks: {
+                lastReset: new Date().toDateString(),
+                tasks: {},
+                completedToday: 0
+            },
+            expBoostUntil: null
+        };
+
+        // 种子数据
+        const CROPS = {
+            tomato_seed: {
+                name: '番茄种子',
+                icon: '🌱',
+                price: 10,
+                growIcon: '🍅',
+                sellPrice: 15,
+                growthTime: 3000,
+                exp: 5
+            },
+            corn_seed: {
+                name: '玉米种子',
+                icon: '🌱',
+                price: 15,
+                growIcon: '🌽',
+                sellPrice: 20,
+                growthTime: 4000,
+                exp: 6
+            },
+            carrot_seed: {
+                name: '胡萝卜种子',
+                icon: '🌱',
+                price: 8,
+                growIcon: '🥕',
+                sellPrice: 12,
+                growthTime: 2500,
+                exp: 4
+            },
+            wheat_seed: {
+                name: '小麦种子',
+                icon: '🌱',
+                price: 12,
+                growIcon: '🌾',
+                sellPrice: 18,
+                growthTime: 3500,
+                exp: 5
+            }
+        };
+
+        let selectedTool = 'plant';
+
+        // 存档系统
+        const SaveSystem = {
+            SAVE_KEY: 'farmGameSave',
+              save() {
+                try {
+                    const saveData = {
+                        ...GameState,
+                        saveTime: Date.now()
+                    };
+                    localStorage.setItem(this.SAVE_KEY, JSON.stringify(saveData));
+                    console.log('游戏已保存');
+                    return true;
+                } catch (error) {
+                    console.error('保存失败:', error);
+                    return false;
+                }
+            },
+              load() {
+                try {
+                    const saveData = localStorage.getItem(this.SAVE_KEY);
+                    if (saveData) {
+                        const parsed = JSON.parse(saveData);
+                        Object.assign(GameState, parsed);
+                        
+                        // 确保宠物数组存在
+                        if (!GameState.pets) {
+                            GameState.pets = [];
+                        }
+                        
+                        // 确保每日任务结构存在
+                        if (!GameState.dailyTasks) {
+                            GameState.dailyTasks = {
+                                lastReset: new Date().toDateString(),
+                                tasks: {},
+                                completedToday: 0
+                            };
+                        }
+                        
+                        console.log('游戏已加载');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('加载失败:', error);
+                }
+                return false;
+            },
+              hasSave() {
+                return localStorage.getItem(this.SAVE_KEY) !== null;
+            }
+        };
+
+        // 成就系统
+        const AchievementSystem = {
+            achievements: {
+                first_plant: {
+                    name: '初次种植',
+                    description: '种植你的第一颗种子',
+                    reward: { gold: 50, exp: 10 },
+                    icon: '🌱'
+                },
+                first_harvest: {
+                    name: '初次收获',
+                    description: '收获你的第一株作物',
+                    reward: { gold: 100, exp: 20 },
+                    icon: '🌾'
+                },
+                level_5: {
+                    name: '农场新手',
+                    description: '达到等级5',
+                    reward: { diamonds: 5, gold: 200 },
+                    icon: '⭐'
+                },
+                level_10: {
+                    name: '农场专家',
+                    description: '达到等级10',
+                    reward: { diamonds: 10, gold: 500 },
+                    icon: '🏆'
+                },
+                rich_farmer: {
+                    name: '富有农夫',
+                    description: '拥有5000金币',
+                    reward: { diamonds: 3, exp: 50 },
+                    icon: '💰'
+                },
+                master_farmer: {
+                    name: '农场大师',
+                    description: '收获100株作物',
+                    reward: { diamonds: 15, gold: 1000 },
+                    icon: '👑'
+                }
+            },
+            
+            checkAchievement(type) {
+                const achievement = this.achievements[type];
+                if (!achievement || GameState.achievements[type]) return;
+                
+                let unlocked = false;
+                
+                switch(type) {
+                    case 'first_plant':
+                        unlocked = GameState.player.totalPlantsGrown >= 1;
+                        break;
+                    case 'first_harvest':
+                        unlocked = GameState.player.totalHarvested >= 1;
+                        break;
+                    case 'level_5':
+                        unlocked = GameState.player.level >= 5;
+                        break;
+                    case 'level_10':
+                        unlocked = GameState.player.level >= 10;
+                        break;
+                    case 'rich_farmer':
+                        unlocked = GameState.player.gold >= 5000;
+                        break;
+                    case 'master_farmer':
+                        unlocked = GameState.player.totalHarvested >= 100;
+                        break;
+                }
+                
+                if (unlocked) {
+                    GameState.achievements[type] = true;
+                    this.showAchievementPopup(achievement);
+                    
+                    // 给予奖励
+                    if (achievement.reward.gold) {
+                        GameState.player.gold += achievement.reward.gold;
+                    }
+                    if (achievement.reward.exp) {
+                        GameState.player.exp += achievement.reward.exp;
+                    }
+                    if (achievement.reward.diamonds) {
+                        GameState.player.diamonds += achievement.reward.diamonds;
+                    }
+                    
+                    updateUI();
+                    console.log(`成就解锁: ${achievement.name}`);
+                }
+            },
+            
+            showAchievementPopup(achievement) {
+                const popup = document.createElement('div');
+                popup.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #FFD700, #FFA500);
+                    border: 3px solid #FF8C00;
+                    border-radius: 15px;
+                    padding: 15px;
+                    z-index: 1000;
+                    min-width: 250px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                `;
+                popup.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="font-size: 2em;">${achievement.icon}</div>
+                        <div>
+                            <h3 style="margin: 0 0 5px 0; color: #2F4F4F;">🏆 成就解锁！</h3>
+                            <p style="margin: 0 0 3px 0; font-weight: bold; color: #2F4F4F;">${achievement.name}</p>
+                            <small style="color: #556B2F;">${achievement.description}</small>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+                
+                setTimeout(() => {
+                    if (popup.parentNode) {
+                        popup.parentNode.removeChild(popup);
+                    }
+                }, 3000);
+            }
+        };        // 音频系统
+        const AudioSystem = {
+            context: null,
+            backgroundMusic: null,
+            soundEnabled: true,
+            musicEnabled: false,
+            musicVolume: 0.5,
+            soundVolume: 0.3,
+
+            init() {
+                try {
+                    this.context = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('音频系统已初始化');
+                } catch (error) {
+                    console.log('音频系统初始化失败:', error);
+                }
+            },
+
+            playSound(type) {
+                if (!this.soundEnabled || !this.context) return;
+                
+                const sounds = {
+                    plant: { freq: 440, duration: 0.2 },
+                    water: { freq: 330, duration: 0.3 },
+                    harvest: { freq: 523, duration: 0.4 },
+                    coin: { freq: 659, duration: 0.3 },
+                    levelup: { freq: 880, duration: 0.5 },
+                    buy: { freq: 494, duration: 0.2 }
+                };
+                
+                const sound = sounds[type];
+                if (sound && this.context) {
+                    const oscillator = this.context.createOscillator();
+                    const gainNode = this.context.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.context.destination);
+                    
+                    oscillator.frequency.setValueAtTime(sound.freq, this.context.currentTime);
+                    oscillator.type = 'triangle';
+                    
+                    gainNode.gain.setValueAtTime(0, this.context.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(this.soundVolume * 0.3, this.context.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, this.context.currentTime + sound.duration);
+                    
+                    oscillator.start();
+                    oscillator.stop(this.context.currentTime + sound.duration);
+                }
+                
+                console.log('播放音效:', type);
+            },
+
+            generateBackgroundMusic() {
+                if (!this.context || !this.musicEnabled) return;
+                
+                const melody = [261.63, 293.66, 329.63, 349.23, 392, 440, 493.88, 523.25]; // C大调音阶
+                let currentTime = this.context.currentTime;
+                const noteDuration = 0.8;
+                
+                // 播放简单旋律
+                for (let i = 0; i < 8; i++) {
+                    const note = melody[i % melody.length];
+                    this.playNote(note, currentTime + i * noteDuration, noteDuration, 0.1);
+                }
+                
+                // 递归播放以创建循环效果
+                if (this.musicEnabled) {
+                    setTimeout(() => {
+                        this.generateBackgroundMusic();
+                    }, 6400); // 8拍 * 0.8秒
+                }
+            },
+
+            playNote(frequency, startTime, duration, volume = 0.1) {
+                if (!this.context || !this.musicEnabled) return;
+                
+                const oscillator = this.context.createOscillator();
+                const gainNode = this.context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                oscillator.frequency.setValueAtTime(frequency, startTime);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(volume * this.musicVolume, startTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            },            toggleMusic() {
+                this.musicEnabled = !this.musicEnabled;
+                const toggleBtn = document.getElementById('musicToggle');
+                const visualizer = document.getElementById('musicVisualizer');
+                const title = document.querySelector('.music-title');
+                
+                if (this.musicEnabled) {
+                    if (this.context && this.context.state === 'suspended') {
+                        this.context.resume();
+                    }
+                    this.generateBackgroundMusic();
+                    toggleBtn.textContent = '暂停';
+                    toggleBtn.classList.add('active');
+                    if (visualizer) {
+                        visualizer.style.opacity = '1';
+                        visualizer.classList.add('active');
+                    }
+                    if (title) title.classList.add('playing');
+                    showStatus('🎵 背景音乐已开启');
+                } else {
+                    toggleBtn.textContent = '播放';
+                    toggleBtn.classList.remove('active');
+                    if (visualizer) {
+                        visualizer.style.opacity = '0.3';
+                        visualizer.classList.remove('active');
+                    }
+                    if (title) title.classList.remove('playing');
+                    showStatus('🎵 背景音乐已暂停');
+                }
+                
+                console.log('音乐状态:', this.musicEnabled ? '播放中' : '已暂停');
+                return this.musicEnabled;
+            }
+        };
+
+        // 天气系统
+        const WeatherSystem = {
+            weatherTypes: {
+                sunny: {
+                    name: '晴天',
+                    icon: '☀️',
+                    description: '作物正常生长',
+                    growthMultiplier: 1.0
+                }
+            },
+
+            getCurrentWeather() {
+                return this.weatherTypes[GameState.weather.current];
+            },
+
+            updateWeather() {
+                // 简化版本，暂时不变化天气
+            }
+        };
+
+        // 显示状态
+        function showStatus(message) {
+            document.getElementById('status').textContent = message;
+            console.log('状态:', message);
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('playerLevel').textContent = GameState.player.level;
+            document.getElementById('goldAmount').textContent = GameState.player.gold;
+            document.getElementById('diamondAmount').textContent = GameState.player.diamonds;
+            document.getElementById('expText').textContent = `${GameState.player.exp}/${GameState.player.maxExp}`;
+            
+            const expPercentage = (GameState.player.exp / GameState.player.maxExp) * 100;
+            document.getElementById('expBar').style.width = expPercentage + '%';
+        }
+
+        // 初始化农田
+        function initializePlots() {
+            const totalPlots = GameState.farmSize.rows * GameState.farmSize.cols;
+            GameState.plots = Array(totalPlots).fill().map(() => ({
+                state: 'empty',
+                crop: null,
+                plantTime: null,
+                growthTime: 3000
+            }));
+            console.log('初始化了', totalPlots, '个农田格子');
+        }
+
+        // 创建农田网格
+        function createFarmGrid() {
+            const farmGrid = document.getElementById('farmGrid');
+            farmGrid.innerHTML = '';
+            
+            const totalPlots = GameState.farmSize.rows * GameState.farmSize.cols;
+            
+            for (let i = 0; i < totalPlots; i++) {
+                const plot = document.createElement('div');
+                plot.className = 'farm-plot empty';
+                plot.dataset.plotId = i;
+                plot.innerHTML = '';
+                farmGrid.appendChild(plot);
+            }
+            
+            console.log('创建了', totalPlots, '个农田格子');
+        }
+
+        // 创建种子选择器
+        function createSeedSelector() {
+            const seedButtons = document.getElementById('seedButtons');
+            seedButtons.innerHTML = Object.entries(CROPS).map(([seedType, data]) => {
+                const count = GameState.inventory[seedType] || 0;
+                const isActive = seedType === GameState.selectedSeed;
+                return `
+                    <button class="seed-btn ${isActive ? 'active' : ''}" data-seed="${seedType}">
+                        ${data.growIcon} ${data.name.replace('种子', '')} (${count})
+                    </button>
+                `;
+            }).join('');
+            
+            // 绑定种子选择事件
+            document.querySelectorAll('.seed-btn').forEach(btn => {
+               
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.seed-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    GameState.selectedSeed = this.dataset.seed;
+                    showStatus(`已选择：${CROPS[GameState.selectedSeed].name}`);
+                });
+            });
+        }        // 每日任务系统
+        const DailyTaskSystem = {
+            tasks: {
+                plant: { current: 0, target: 5, completed: false, claimed: false },
+                harvest: { current: 0, target: 10, completed: false, claimed: false },
+                water: { current: 0, target: 15, completed: false, claimed: false },
+                gold: { current: 0, target: 500, completed: false, claimed: false }
+            },
+            
+            init() {
+                this.checkAndResetDaily();
+                this.startRefreshTimer();
+                this.updateAllTaskDisplays();
+            },
+            
+            checkAndResetDaily() {
+                const today = new Date().toDateString();
+                if (GameState.dailyTasks.lastReset !== today) {
+                    console.log('每日任务重置 - 新的一天开始');
+                    this.resetTasks();
+                    GameState.dailyTasks.lastReset = today;
+                    GameState.dailyTasks.completedToday = 0;
+                    showStatus('🌅 新的一天开始了！每日任务已重置！');
+                }
+            },
+            
+            resetTasks() {
+                // 重置所有任务进度
+                for (let taskType in this.tasks) {
+                    this.tasks[taskType].current = 0;
+                    this.tasks[taskType].completed = false;
+                    this.tasks[taskType].claimed = false;
+                }
+                
+                // 随机化任务目标（增加游戏趣味性）
+                this.tasks.plant.target = Math.floor(Math.random() * 5) + 3; // 3-7
+                this.tasks.harvest.target = Math.floor(Math.random() * 8) + 8; // 8-15
+                this.tasks.water.target = Math.floor(Math.random() * 10) + 10; // 10-19
+                this.tasks.gold.target = Math.floor(Math.random() * 300) + 400; // 400-699
+                
+                this.updateAllTaskDisplays();
+            },
+            
+            startRefreshTimer() {
+                // 更新倒计时显示
+                this.updateRefreshTimer();
+                
+                // 每秒更新一次倒计时
+                setInterval(() => {
+                    this.updateRefreshTimer();
+                    this.checkAndResetDaily();
+                }, 1000);
+            },
+            
+            updateRefreshTimer() {
+                const now = new Date();
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                
+                const timeDiff = tomorrow.getTime() - now.getTime();
+                const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                const refreshTimeElement = document.getElementById('taskRefreshTime');
+                if (refreshTimeElement) {
+                    refreshTimeElement.textContent = timeString;
+                }
+            },
+            
+            updateAllTaskDisplays() {
+                for (let taskType in this.tasks) {
+                    this.updateTaskDisplay(taskType);
+                }
+            },
+            
+            updateTaskProgress(taskType, amount = 1) {
+                if (this.tasks[taskType] && !this.tasks[taskType].completed) {
+                    this.tasks[taskType].current += amount;
+                    
+                    if (this.tasks[taskType].current >= this.tasks[taskType].target) {
+                        this.tasks[taskType].completed = true;
+                        this.showTaskCompletedNotification(taskType);
+                    }
+                    
+                    this.updateTaskDisplay(taskType);
+                }
+
+            },
+            
+            showTaskCompletedNotification(taskType) {
+                const taskNames = {
+                    plant: '种植任务',
+                    harvest: '收获任务', 
+                    water: '浇水任务',
+                    gold: '赚钱任务'
+                };
+                
+                showStatus(`🎉 ${taskNames[taskType]}已完成！可以领取奖励了！`);
+            },
+              updateTaskDisplay(taskType) {
+                const task = this.tasks[taskType];
+                const taskElement = document.getElementById(`daily-task-${this.getTaskIndex(taskType)}`);
+                
+                if (taskElement) {
+                    const progressBar = taskElement.querySelector('.progress-fill');
+                    const progressText = taskElement.querySelector('.progress-text');
+                    const claimBtn = taskElement.querySelector('.claim-btn');
+                    const taskInfo = taskElement.querySelector('.task-info p');
+                    
+                    const progress = Math.min(100, (task.current / task.target) * 100);
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `${task.current}/${task.target}`;
+                    
+                    // 更新任务描述中的目标数量
+                    const taskDescriptions = {
+                        plant: `种植${task.target}颗种子`,
+                        harvest: `收获${task.target}个作物`,
+                        water: `浇水${task.target}次`,
+                        gold: `赚取${task.target}金币`
+                    };
+                    
+                    if (taskInfo) {
+                        taskInfo.textContent = taskDescriptions[taskType] || taskInfo.textContent;
+                    }
+                    
+                    // 移除所有状态类
+                    taskElement.classList.remove('incomplete', 'complete', 'claimed');
+                    
+                    if (task.claimed) {
+                        taskElement.classList.add('claimed');
+                        claimBtn.disabled = true;
+                        claimBtn.textContent = '已领取';
+                        claimBtn.style.background = '#999';
+                    } else if (task.completed) {
+                        taskElement.classList.add('complete');
+                        claimBtn.disabled = false;
+                        claimBtn.textContent = '领取奖励';
+                        claimBtn.style.background = '#4CAF50';
+                    } else {
+                        taskElement.classList.add('incomplete');
+                        claimBtn.disabled = true;
+                        claimBtn.textContent = '未完成';
+                        claimBtn.style.background = '#ccc';
+                    }
+                }
+            },
+            
+            getTaskIndex(taskType) {
+                const taskIndices = { plant: 1, harvest: 2, water: 3, gold: 4 };
+                return taskIndices[taskType] || 1;
+            },
+              claimReward(taskIndex) {
+                const taskTypes = ['plant', 'harvest', 'water', 'gold'];
+                const taskType = taskTypes[taskIndex - 1];
+                const task = this.tasks[taskType];
+                
+                if (task && task.completed && !task.claimed) {
+                    const rewards = {
+                        plant: { gold: 200, diamonds: 2 },
+                        harvest: { gold: 300, diamonds: 3 },
+                        water: { gold: 150, diamonds: 1 },
+                        gold: { gold: 1000, diamonds: 5 }
+                    };
+                    
+                    const reward = rewards[taskType];
+                    GameState.player.gold += reward.gold;
+                    GameState.player.diamonds += reward.diamonds;
+                    
+                    // 标记为已领取
+                    task.claimed = true;
+                    GameState.dailyTasks.completedToday++;
+                    
+                    updateUI();
+                    showStatus(`获得奖励：💰 ${reward.gold}金币 + 💎 ${reward.diamonds}钻石！`);
+                    
+                    // 更新按钮状态
+                    const taskElement = document.getElementById(`daily-task-${taskIndex}`);
+                    if (taskElement) {
+                        const claimBtn = taskElement.querySelector('.claim-btn');
+                        claimBtn.textContent = '已领取';
+                        claimBtn.disabled = true;
+                        claimBtn.style.background = '#999';
+                        taskElement.classList.add('claimed');
+                    }
+                    
+                    // 播放奖励音效
+                    AudioSystem.playSound('success');
+                    
+                    // 检查成就
+                    this.checkTaskAchievements();
+                }
+            },
+            
+            checkTaskAchievements() {
+                if (GameState.dailyTasks.completedToday >= 4) {
+                    AchievementSystem.unlock('task_master');
+                }
+            }
+        };
+
+        // 更新农田操作函数以包含任务进度
+        function handleFarmAction(plotId, plot, plotData) {
+            switch(selectedTool) {
+                case 'plant':
+                    if (plotData.state === 'empty') {
+                        const seedType = GameState.selectedSeed;
+                        if (GameState.inventory[seedType] > 0) {
+                            AudioSystem.playSound('plant');
+                            
+                            GameState.inventory[seedType]--;
+                            plotData.state = 'planted';
+                            plotData.crop = seedType;
+                            plotData.plantTime = Date.now();
+                            plotData.growthTime = CROPS[seedType].growthTime;
+                            
+                            // 应用幸运加速器效果
+                            if (GameState.luckyBoosterActive && Date.now() < GameState.luckyBoosterEndTime) {
+                                plotData.growthTime = plotData.growthTime / 2;
+                            }
+                            
+                            plot.classList.remove('empty');
+                            plot.classList.add('planted');
+                            plot.innerHTML = CROPS[seedType].icon;
+                            
+                            // 更新统计
+                            GameState.player.totalPlantsGrown++;
+                            
+                            // 更新每日任务进度
+                            DailyTaskSystem.updateTaskProgress('plant');
+                            
+                            // 检查成就
+                            AchievementSystem.checkAchievement('first_plant');
+                            
+                            showStatus(`在农田${plotId}种植了${CROPS[seedType].name}！`);
+                            createSeedSelector(); // 更新种子选择器
+                            
+                            // 作物成熟
+                            setTimeout(() => {
+                                if (plotData.state === 'planted' && plotData.crop === seedType) {
+                                    plot.innerHTML = CROPS[seedType].growIcon;
+                                    plotData.state = 'ready';
+                                    showStatus(`农田${plotId}的${CROPS[seedType].name.replace('种子', '')}成熟了！`);
+                                }
+                            }, plotData.growthTime);
+                        } else {
+                            showStatus(`${CROPS[GameState.selectedSeed].name}不足！请先购买种子。`);
+                        }
+                    } else {
+                        showStatus(`农田${plotId}已经有作物了！`);
+                    }
+                    break;
+                    
+                case 'harvest':
+                    if (plotData.state === 'ready') {
+                        AudioSystem.playSound('harvest');
+                        
+                        const cropType = plotData.crop;
+                        const harvestItem = cropType.replace('_seed', '');
+                        let goldEarned = CROPS[cropType].sellPrice;
+                        let expGained = CROPS[cropType].exp;
+                        
+                        // 应用经验加倍器效果
+                        if (GameState.expBoosterActive && Date.now() < GameState.expBoosterEndTime) {
+                            expGained *= 2;
+                            showStatus('经验加倍器生效！经验翻倍！');
+                        }
+                        
+                        GameState.inventory[harvestItem] = (GameState.inventory[harvestItem] || 0) + 1;
+                        GameState.player.gold += goldEarned;
+                        GameState.player.exp += expGained;
+                        
+                        // 更新统计
+                        GameState.player.totalHarvested++;
+                        
+                        // 更新每日任务进度
+                        DailyTaskSystem.updateTaskProgress('harvest');
+                        DailyTaskSystem.updateTaskProgress('gold', goldEarned);
+                        
+                        // 检查成就
+                        AchievementSystem.checkAchievement('first_harvest');
+                        AchievementSystem.checkAchievement('master_farmer');
+                        AchievementSystem.checkAchievement('rich_farmer');
+                        
+                        if (GameState.player.exp >= GameState.player.maxExp) {
+                            GameState.player.level++;
+                            GameState.player.exp = GameState.player.exp - GameState.player.maxExp;
+                            GameState.player.maxExp = Math.floor(GameState.player.maxExp * 1.5);
+                            
+                            // 检查等级成就
+                            AchievementSystem.checkAchievement('level_5');
+                            AchievementSystem.checkAchievement('level_10');
+                            
+                            AudioSystem.playSound('level_up');
+                            showStatus(`🎉 恭喜升级到 ${GameState.player.level} 级！`);
+                        }
+                        
+                        plotData.state = 'empty';
+                        plotData.crop = null;
+                        plotData.plantTime = null;
+                        
+                        plot.classList.remove('planted');
+                        plot.classList.add('empty');
+                        plot.innerHTML = '';
+                        
+                        showStatus(`收获了${CROPS[cropType].name.replace('种子', '')}！获得${goldEarned}金币和${expGained}经验！`);
+                        updateUI();
+                    } else {
+                        showStatus(`农田${plotId}还没有成熟的作物！`);
+                    }
+                    break;
+                    
+                case 'water':
+                    if (plotData.state === 'planted') {
+                        AudioSystem.playSound('water');
+                        
+                        // 更新每日任务进度
+                        DailyTaskSystem.updateTaskProgress('water');
+                        
+                        showStatus(`给农田${plotId}浇水完成！作物成长加速！`);
+                        // 加速成长
+                        if (plotData.plantTime) {
+                            const elapsed = Date.now() - plotData.plantTime;
+                            const remaining = plotData.growthTime - elapsed;
+                            if (remaining > 0) {
+                                plotData.growthTime = elapsed + Math.max(500, remaining * 0.8);
+                            }
+                        }
+                    } else {
+                        showStatus(`农田${plotId}没有作物可以浇水！`);
+                    }
+                    break;
+                    
+                case 'shovel':
+                    plotData.state = 'empty';
+                    plotData.crop = null;
+                    plotData.plantTime = null;
+                    
+                    plot.classList.remove('planted');
+                    plot.classList.add('empty');
+                    plot.innerHTML = '';
+                    
+                    showStatus(`清除了农田${plotId}！`);
+                    break;
+            }
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 按钮事件
+            document.getElementById('shopBtn').addEventListener('click', function() {
+                document.getElementById('shopModal').classList.remove('hidden');
+                showStatus('商店已打开！');
+            });
+            
+            document.getElementById('inventoryBtn').addEventListener('click', function() {
+                updateInventoryDisplay();
+                document.getElementById('inventoryModal').classList.remove('hidden');
+                showStatus('仓库已打开！');
+            });
+            
+            document.getElementById('achievementsBtn').addEventListener('click', function() {
+                // 生成成就内容
+                const achievementGrid = document.getElementById('achievementGrid');
+                const achievements = AchievementSystem.achievements;
+                let achievementHTML = `
+                    <div class="achievement-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">总成就数:</span>
+                            <span class="stat-value">${Object.keys(achievements).length}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">已解锁:</span>
+                            <span class="stat-value">${Object.keys(GameState.achievements).filter(key => GameState.achievements[key]).length}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">成就点数:</span>
+                            <span class="stat-value">${Object.keys(GameState.achievements).filter(key => GameState.achievements[key]).length * 10}</span>
+                        </div>
+                    </div>
+                    <div class="achievement-grid">
+                `;
+                
+                Object.entries(achievements).forEach(([key, achievement]) => {
+                    const unlocked = GameState.achievements[key];
+                    achievementHTML += `
+                        <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+                            <div class="achievement-icon">${achievement.icon}</div>
+                            <div class="achievement-info">
+                                <h4>${achievement.name}</h4>
+                                <p>${achievement.description}</p>
+                                <div class="achievement-reward">
+                                    奖励: ${achievement.reward.gold ? `💰 ${achievement.reward.gold}金币 ` : ''}
+                                    ${achievement.reward.exp ? `✨ ${achievement.reward.exp}经验 ` : ''}
+                                    ${achievement.reward.diamonds ? `💎 ${achievement.reward.diamonds}钻石` : ''}
+                                </div>
+                                <div class="achievement-progress">${unlocked ? '✅ 已解锁' : '🔒 未解锁'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                achievementHTML += '</div>';
+                achievementGrid.innerHTML = achievementHTML;
+                
+                document.getElementById('achievementsModal').classList.remove('hidden');
+                showStatus('成就系统已打开！');
+            });
+            
+            document.getElementById('tasksBtn').addEventListener('click', function() {
+                document.getElementById('tasksModal').classList.remove('hidden');
+                showStatus('每日任务已打开！');
+            });
+            
+            document.getElementById('petsBtn').addEventListener('click', function() {
+                document.getElementById('petsModal').classList.remove('hidden');
+                showStatus('宠物系统已打开！');
+            });
+            
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                if (SaveSystem.save()) {
+                    showStatus('游戏已手动保存！');
+                } else {
+                    showStatus('保存失败！');
+                }
+            });
+            
+            document.getElementById('helpBtn').addEventListener('click', function() {
+                alert('🌾 农场小游戏帮助：\n1. 选择种子类型和工具\n2. 点击农田格子进行操作\n3. 种植 → 等待成熟 → 收获\n4. 收获获得金币和经验值\n5. 升级获得奖励\n6. 购买种子和特殊道具\n7. 完成每日任务获得奖励');
+            });
+            
+            document.getElementById('musicBtn').addEventListener('click', function() {
+                const panel = document.getElementById('musicPanel');
+                panel.classList.toggle('hidden');
+                showStatus('音乐设置面板已' + (panel.classList.contains('hidden') ? '关闭' : '打开'));
+            });
+            
+            // 关闭弹窗事件
+            document.getElementById('closeShop').addEventListener('click', function() {
+                document.getElementById('shopModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closeInventory').addEventListener('click', function() {
+                document.getElementById('inventoryModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closeAchievements').addEventListener('click', function() {
+                document.getElementById('achievementsModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closeTasks').addEventListener('click', function() {
+                document.getElementById('tasksModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closePets').addEventListener('click', function() {
+                document.getElementById('petsModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closeMusicPanel').addEventListener('click', function() {
+                document.getElementById('musicPanel').classList.add('hidden');
+            });            document.getElementById('musicToggle').addEventListener('click', function() {
+                AudioSystem.toggleMusic();
+            });
+            
+            document.getElementById('soundToggle').addEventListener('click', function() {
+                AudioSystem.soundEnabled = !AudioSystem.soundEnabled;
+                this.textContent = AudioSystem.soundEnabled ? '开启' : '关闭';
+                this.classList.toggle('active', AudioSystem.soundEnabled);
+                if (AudioSystem.soundEnabled) {
+                    AudioSystem.playSound('success');
+                    showStatus('🔊 音效已开启');
+                } else {
+                    showStatus('🔇 音效已关闭');
+                }
+            });
+            
+            // 音量滑块事件
+            document.getElementById('musicVolume').addEventListener('input', function() {
+                const volume = parseFloat(this.value);
+                AudioSystem.musicVolume = volume;
+                AudioSystem.soundVolume = volume;
+                showStatus(`🎚️ 音量调节至 ${Math.round(volume * 100)}%`);
+            });
+            
+            // 工具事件
+            document.querySelectorAll('.tool').forEach(tool => {
+                tool.addEventListener('click', function() {
+                    document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedTool = this.dataset.tool;
+                    showStatus(`已选择工具: ${this.textContent.trim()}`);
+                });
+            });
+            
+            // 农田事件
+            document.getElementById('farmGrid').addEventListener('click', function(e) {
+                const plot = e.target.closest('.farm-plot');
+                if (plot && selectedTool) {
+                    const plotId = parseInt(plot.dataset.plotId);
+                    const plotData = GameState.plots[plotId];
+                    handleFarmAction(plotId, plot, plotData);
+                }
+            });
+        }
+
+        // 更新天气显示
+        function updateWeatherDisplay() {
+            const weather = WeatherSystem.getCurrentWeather();
+            document.getElementById('weatherIcon').textContent = weather.icon;
+            document.getElementById('weatherName').textContent = weather.name;
+            document.getElementById('weatherDesc').textContent = weather.description;
+        }
+
+        // 标签页切换功能
+        function initTabSwitching() {
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('tab-btn')) {
+                    const container = e.target.closest('.modal-content');
+                    if (!container) return;
+                    
+                    // 移除所有活跃状态
+                    container.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    container.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                      // 添加活跃状态
+                    e.target.classList.add('active');
+                    const tabId = e.target.dataset.tab;
+                    
+                    // 查找对应的内容区域
+                    let tabContent = null;
+                    if (tabId === 'seeds') {
+                        tabContent = container.querySelector('#seeds-tab') || container.querySelector('#inventory-seeds');
+                    } else if (tabId === 'tools') {
+                        tabContent = container.querySelector('#tools-tab') || container.querySelector('#inventory-tools');
+                    } else if (tabId === 'crops') {
+                        tabContent = container.querySelector('#inventory-crops');
+                    } else if (tabId === 'owned') {
+                        tabContent = container.querySelector('#owned-pets');
+                    } else if (tabId === 'shop') {
+                        tabContent = container.querySelector('#pet-shop');
+                    } else if (tabId === 'care') {
+                        tabContent = container.querySelector('#pet-care');
+                    }
+                    
+                    if (tabContent) {
+                        tabContent.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        // 商店购买功能
+        function buyItem(itemType, price) {
+            if (GameState.player.gold >= price) {
+                GameState.player.gold -= price;
+                
+                // 根据物品类型添加到背包
+                switch(itemType) {
+                    case 'carrotSeed':
+                        GameState.inventory.carrot_seed = (GameState.inventory.carrot_seed || 0) + 10;
+                        break;
+                    case 'tomatoSeed':
+                        GameState.inventory.tomato_seed = (GameState.inventory.tomato_seed || 0) + 10;
+                        break;
+                    case 'cornSeed':
+                        GameState.inventory.corn_seed = (GameState.inventory.corn_seed || 0) + 10;
+                        break;
+                    case 'wheatSeed':
+                        GameState.inventory.wheat_seed = (GameState.inventory.wheat_seed || 0) + 10;
+                        break;
+                }
+                
+                updateUI();
+                createSeedSelector();
+                showStatus(`成功购买 ${itemType}！`);
+                updateInventoryDisplay();
+            } else {
+                showStatus('金币不足！');
+            }
+        }
+
+        // 钻石商店购买功能
+        function buyDiamondItem(itemType, price) {
+            if (GameState.player.diamonds >= price) {
+                GameState.player.diamonds -= price;
+                
+                // 激活特殊道具效果
+                switch(itemType) {
+                    case 'expBooster':
+                        activateExpBooster();
+                        break;
+                    case 'autoWater':
+                        activateAutoWater();
+                        break;
+                    case 'farmExpansion':
+                        expandFarm();
+                        break;
+                    case 'luckyBooster':
+                        activateLuckyBooster();
+                        break;
+                }
+                
+                updateUI();
+                showStatus(`成功购买 ${itemType}！`);
+            } else {
+                showStatus('钻石不足！');
+            }
+        }
+
+        // 激活经验加倍器
+        function activateExpBooster() {
+            GameState.expBoosterActive = true;
+            GameState.expBoosterEndTime = Date.now() + 30 * 60 * 1000; // 30分钟
+            showStatus('经验加倍器已激活！30分钟内经验翻倍！');
+        }
+
+        // 激活自动浇水器
+        function activateAutoWater() {
+            GameState.autoWaterActive = true;
+            GameState.autoWaterEndTime = Date.now() + 60 * 60 * 1000; // 60分钟
+            showStatus('自动浇水器已激活！1小时内自动浇水！');
+            
+            // 每30秒自动浇水一次
+            const autoWaterInterval = setInterval(() => {
+                if (!GameState.autoWaterActive || Date.now() > GameState.autoWaterEndTime) {
+                    clearInterval(autoWaterInterval);
+                    GameState.autoWaterActive = false;
+                    showStatus('自动浇水器效果已结束');
+                    return;
+                }
+                
+                // 给所有已种植的作物浇水
+                GameState.plots.forEach((plot, index) => {
+                    if (plot.state === 'planted') {
+                        // 加速成长逻辑
+                        if (plot.plantTime) {
+                            const elapsed = Date.now() - plot.plantTime;
+                            const remaining = plot.growthTime - elapsed;
+                            if (remaining > 0) {
+                                plot.growthTime = elapsed + Math.max(500, remaining * 0.9);
+                            }
+                        }
+                    }
+                });
+            }, 30000);
+        }
+
+        // 扩展农场
+        function expandFarm() {
+            const newPlots = 4;
+            for (let i = 0; i < newPlots; i++) {
+                GameState.plots.push({
+                    state: 'empty',
+                    crop: null,
+                    plantTime: null,
+                    growthTime: 3000
+                });
+            }
+            
+            // 重新创建农田网格
+            createFarmGrid();
+            showStatus(`农场已扩展！新增了${newPlots}块农田！`);
+        }
+
+        // 激活幸运加速器
+        function activateLuckyBooster() {
+            GameState.luckyBoosterActive = true;
+            GameState.luckyBoosterEndTime = Date.now() + 30 * 60 * 1000; // 30分钟
+            showStatus('幸运加速器已激活！30分钟内作物生长速度翻倍！');
+        }
+
+        // 出售作物
+        function sellCrop(cropType, price) {
+            if (GameState.inventory[cropType] > 0) {
+                GameState.inventory[cropType]--;
+                GameState.player.gold += price;
+                updateUI();
+                updateInventoryDisplay();
+                showStatus(`出售了1个${cropType}，获得${price}金币！`);
+            } else {
+                showStatus(`没有${cropType}可以出售！`);
+            }
+        }
+
+        // 更新仓库显示
+        function updateInventoryDisplay() {
+            // 更新种子数量
+            document.getElementById('carrotSeed-count').textContent = GameState.inventory.carrot_seed || 0;
+            document.getElementById('tomatoSeed-count').textContent = GameState.inventory.tomato_seed || 0;
+            document.getElementById('cornSeed-count').textContent = GameState.inventory.corn_seed || 0;
+            document.getElementById('wheatSeed-count').textContent = GameState.inventory.wheat_seed || 0;
+            
+            // 更新作物数量
+            document.getElementById('carrot-count').textContent = GameState.inventory.carrot || 0;
+            document.getElementById('tomato-count').textContent = GameState.inventory.tomato || 0;
+            document.getElementById('corn-count').textContent = GameState.inventory.corn || 0;
+            document.getElementById('wheat-count').textContent = GameState.inventory.wheat || 0;
+        }        // 宠物相关函数
+        function buyPet(petType, price) {
+            if (GameState.player.gold >= price) {
+                GameState.player.gold -= price;
+                
+                // 添加宠物逻辑
+                if (!GameState.pets) GameState.pets = [];
+                GameState.pets.push({
+                    type: petType,
+                    name: getPetName(petType),
+                    level: 1,
+                    happiness: 100,
+                    hunger: 100,
+                    id: Date.now()
+                });
+                
+                updateUI();
+                updatePetDisplay();
+                AudioSystem.playSound('success');
+                showStatus(`成功购买了宠物：${getPetName(petType)}！`);
+            } else {
+                showStatus('金币不足！');
+            }
+        }
+
+        function buyPetWithDiamond(petType, price) {
+            if (GameState.player.diamonds >= price) {
+                GameState.player.diamonds -= price;
+                
+                // 添加宠物逻辑
+                if (!GameState.pets) GameState.pets = [];
+                GameState.pets.push({
+                    type: petType,
+                    name: getPetName(petType),
+                    level: 1,
+                    happiness: 100,
+                    hunger: 100,
+                    id: Date.now()
+                });
+                
+                updateUI();
+                updatePetDisplay();
+                AudioSystem.playSound('success');
+                showStatus(`成功购买了宠物：${getPetName(petType)}！`);
+            } else {
+                showStatus('钻石不足！');
+            }
+        }
+
+        function updatePetDisplay() {
+            const petSlots = document.querySelectorAll('#owned-pets .pet-slot');
+            
+            petSlots.forEach((slot, index) => {
+                if (GameState.pets && GameState.pets[index]) {
+                    const pet = GameState.pets[index];
+                    slot.classList.remove('empty');
+                    slot.classList.add('occupied');
+                    slot.innerHTML = `
+                        <div class="pet-info">
+                            <div class="pet-icon">${getPetIcon(pet.type)}</div>
+                            <h4>${pet.name}</h4>
+                            <p>等级: ${pet.level}</p>
+                            <div class="pet-stats">
+                                <div>❤️ 快乐度: ${pet.happiness}%</div>
+                                <div>🍖 饱食度: ${pet.hunger}%</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    slot.classList.add('empty');
+                    slot.classList.remove('occupied');
+                    slot.innerHTML = `
+                        <div class="pet-placeholder">
+                            <div class="pet-icon">🐕</div>
+                            <p>暂无宠物</p>
+                            <button class="adopt-btn" onclick="showPetShop()">领养宠物</button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function showPetShop() {
+            // 切换到宠物商店标签
+            const shopTab = document.querySelector('[data-tab="shop"]');
+            const shopContent = document.getElementById('pet-shop');
+            
+            // 移除所有活跃状态
+            document.querySelectorAll('.pet-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#petsModal .tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 激活商店标签
+            shopTab.classList.add('active');
+            shopContent.classList.add('active');
+        }
+
+        function getPetIcon(petType) {
+            const icons = {
+                dog: '🐕',
+                cat: '🐱',
+                rabbit: '🐰',
+                unicorn: '🦄'
+            };
+            return icons[petType] || '🐾';
+        }
+
+        function getPetName(petType) {
+            const names = {
+                dog: '小狗',
+                cat: '小猫',
+                rabbit: '兔子',
+                unicorn: '独角兽'
+            };
+            return names[petType] || petType;
+        }
+
+        function feedPet() {
+            if (GameState.player.gold >= 50) {
+                GameState.player.gold -= 50;
+                updateUI();
+                showStatus('宠物已喂食！');
+            } else {
+                showStatus('金币不足！');
+            }
+        }
+
+        function bathePet() {
+            if (GameState.player.gold >= 30) {
+                GameState.player.gold -= 30;
+                updateUI();
+                showStatus('宠物已洗澡！心情提升！');
+            } else {
+                showStatus('金币不足！');
+            }
+        }
+
+        function playWithPet() {
+            showStatus('和宠物玩耍中...宠物很开心！');
+        }        // 任务相关函数
+        function refreshTasks() {
+            DailyTaskSystem.resetTasks();
+            showStatus('🔄 每日任务已手动刷新！目标已重新随机化！');
+            AudioSystem.playSound('click');
+        }// 改进音频系统
+        // AudioSystem已经完善，移除重复的ImprovedAudioSystem        // 初始化游戏
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 游戏开始初始化...');
+              try {
+                // 初始化系统
+                AudioSystem.init();
+                
+                // 检查并加载存档
+                if (SaveSystem.hasSave()) {
+                    SaveSystem.load();
+                    console.log('✅ 存档已加载');
+                }
+                
+                // 初始化农田数据
+                initializePlots();
+                
+                // 创建农田网格
+                createFarmGrid();
+                
+                // 创建种子选择器
+                createSeedSelector();
+                
+                // 初始化每日任务系统
+                DailyTaskSystem.init();
+                
+                // 更新UI
+                updateUI();
+                
+                // 更新天气显示
+                updateWeatherDisplay();
+                
+                // 初始化标签页切换
+                initTabSwitching();
+                
+                // 更新仓库显示
+                updateInventoryDisplay();
+                
+                // 更新宠物显示
+                updatePetDisplay();
+                
+                // 绑定事件
+                bindEvents();
+                
+                showStatus('🌱 欢迎来到农场！选择种子和工具开始您的农场之旅');
+                console.log('✅ 游戏初始化完成！');
+                
+            } catch (error) {
+                console.error('❌ 初始化失败:', error);
+                showStatus('初始化失败: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
